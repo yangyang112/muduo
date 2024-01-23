@@ -1,19 +1,19 @@
 #pragma once
 
-#include <memory>
-#include <string>
 #include <atomic>
 #include <functional>
+#include <memory>
+#include <string>
 #include <unordered_map>
+#include "Acceptor.hpp"
+#include "Buffer.hpp"
+#include "Callbacks.hpp"
 #include "EventLoop.hpp"
 #include "EventLoopThreadPool.hpp"
-#include "TcpConnection.hpp"
-#include "Acceptor.hpp"
 #include "InetAddress.hpp"
-#include "NonCopyable.hpp"
-#include "Callbacks.hpp"
-#include "Buffer.hpp"
 #include "Logger.hpp"
+#include "NonCopyable.hpp"
+#include "TcpConnection.hpp"
 
 using namespace std;
 
@@ -23,8 +23,7 @@ using ConnectionMap = unordered_map<string, TcpConnectionPtr>;
 class TcpServer : NonCopyable
 {
 public:
-    enum Option
-    {
+    enum Option {
         k_noReuse_port, //不可重用
         k_reuse_port,   //可重用
     };
@@ -58,13 +57,13 @@ private:
     const string name_;
 
     unique_ptr<Acceptor> acceptor_;               //运行在mainloop，主要是监听新连接事件
-    shared_ptr<EventLoopThreadPool> thread_pool_; //one loop per thread
+    shared_ptr<EventLoopThreadPool> thread_pool_; // one loop per thread
 
     ConnectionCallback connection_callback_;        //有新连接时回调
     MessageCallback message_callback_;              //有读写消息的回调
     WriteCompleteCallback write_complete_callback_; //消息发送完以后的回调
 
-    ThreadInitCallback thread_init_callback_; //loop 线程初始化的回调
+    ThreadInitCallback thread_init_callback_; // loop 线程初始化的回调
 
     atomic_int started_;
     int next_conn_id_;

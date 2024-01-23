@@ -1,5 +1,5 @@
-#include <strings.h>
 #include "TcpServer.hpp"
+#include <strings.h>
 
 using namespace placeholders;
 
@@ -7,23 +7,23 @@ using namespace placeholders;
 
 EventLoop *CheckLoopNotNull(EventLoop *loop)
 {
-    if (loop == nullptr)
-    {
+    if (loop == nullptr) {
         LOG_FATAL("%s:%s:%d mainloop is null \n", __FILE__, __FUNCTION__, __LINE__);
     }
     return loop;
 }
 
 TcpServer::TcpServer(EventLoop *loop, const InetAddress &listenaddr, const string &name, Option option)
-    : loop_(CheckLoopNotNull(loop)), ip_port_(listenaddr.get_ip_port()), name_(name), acceptor_(new Acceptor(loop, listenaddr, option == k_reuse_port)), thread_pool_(new EventLoopThreadPool(loop, name_)), connection_callback_(), message_callback_(), next_conn_id_(1), started_(0)
+    : loop_(CheckLoopNotNull(loop)), ip_port_(listenaddr.get_ip_port()), name_(name),
+      acceptor_(new Acceptor(loop, listenaddr, option == k_reuse_port)), thread_pool_(new EventLoopThreadPool(loop, name_)), connection_callback_(),
+      message_callback_(), next_conn_id_(1), started_(0)
 {
     //当有新连接会执行new_connection
     acceptor_->set_new_connection_callback(bind(&TcpServer::new_connection, this, _1, _2));
 }
 TcpServer::~TcpServer()
 {
-    for (auto &it : connections_)
-    {
+    for (auto &it : connections_) {
         TcpConnectionPtr conn(it.second); //出右括号，这个局部shared_ptr智能只针对新，出右括号，自动释放new出来的tcpconnection对象
         it.second.reset();
 
@@ -64,8 +64,7 @@ void TcpServer::new_connection(int sockfd, const InetAddress &peeraddr)
     sockaddr_in local;
     bzero(&local, sizeof(local));
     socklen_t addrlen = sizeof(local);
-    if (::getsockname(sockfd, (sockaddr *)&local, &addrlen) < 0)
-    {
+    if (::getsockname(sockfd, (sockaddr *)&local, &addrlen) < 0) {
         LOG_ERROR("new connection get localaddr error\n");
     }
 

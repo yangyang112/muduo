@@ -1,0 +1,4 @@
+[submodule "book_tests"]
+	path = book_tests
+	url = http://github.com/chenshuo/recipes.git
+	branch = master
