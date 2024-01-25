@@ -6,6 +6,11 @@
  * 2. 双向观察者　这种情况还是比较少
  * 3. 遍历的时候　什么情况适合中途 unlock 是个队列时，线程池
  */
+
+/*
+* 作者说,如果观察者有两个观察对象的情况下，有多继承的情况　这种情况下，这并不是一个好的方案
+* 可以参考　book_tests/thread/SignalSlotTrivial.h　，使用functor 
+*/
 class Observable;
 // 1
 class Observer
