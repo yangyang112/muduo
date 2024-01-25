@@ -15,4 +15,5 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 
 add_compile_options(-Wall -Wextra)
 add_subdirectory(recipes)
+add_subdirectory(MyMuduo)
 
