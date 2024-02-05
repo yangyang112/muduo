@@ -53,4 +53,7 @@ Acceptor （loop, socket_path） 然后新建channel.
 1. accept_channel_ 什么时候进入的是loop的fd
 　  accept_channel_.enable_reading(); // 循环依赖
 
+	eventPool -> poll -> channel ->eventPool 
+
 2. 没有其它内容了
+   1. 
