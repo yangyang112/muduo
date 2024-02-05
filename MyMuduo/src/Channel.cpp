@@ -1,5 +1,5 @@
-#include <sys/epoll.h>
 #include "Channel.hpp"
+#include <sys/epoll.h>
 #include "EventLoop.hpp"
 #include "Logger.hpp"
 
@@ -43,6 +43,7 @@ void Channel::tie(const shared_ptr<void> &obj)
 //在channel所属的eventloop中删除自己
 void Channel::remove()
 {
+    // TODO 这里应该是写错了，应是remove_channel
     loop_->update_channel(this);
 }
 
@@ -59,6 +60,7 @@ void Channel::handle_event_withGuard(TimeStamp receive_time)
     LOG_INFO("channel handleEvent revents:%d\n", real_events_);
 
     //是断开连接
+    //并且不是读事件
     if ((real_events_ & EPOLLHUP) && !(real_events_ & EPOLLIN))
     {
         if (close_callback_)

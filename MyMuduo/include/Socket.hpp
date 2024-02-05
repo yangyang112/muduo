@@ -3,6 +3,9 @@
 #include "NonCopyable.hpp"
 class InetAddress;
 
+/*
+* 服务端到accept为止的动作
+*/
 class Socket : NonCopyable
 {
 public:
@@ -16,6 +19,7 @@ public:
     void listen();
     int accept(InetAddress *peeraddr);
 
+    
     void shutdown_write();
 
     void set_tcp_noDelay(bool on);

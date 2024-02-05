@@ -1,7 +1,7 @@
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/eventfd.h>
 #include "EventLoop.hpp"
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/eventfd.h>
 #include "Logger.hpp"
 
 //防止一个线程创建多个eventloop
@@ -14,9 +14,10 @@ const int k_poll_timeout = 10000;
 int CreateEventfd()
 {
     //非阻塞且不被子进程继承
+    // CLOEXEC: CLOSE ON EXEC => 在exec时关闭
+
     int event_fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (event_fd < 0)
-    {
+    if (event_fd < 0) {
         LOG_FATAL("eventfd error:%d \n", errno);
     }
 
@@ -24,15 +25,13 @@ int CreateEventfd()
 }
 
 EventLoop::EventLoop()
-    : looping_(false), quit_(false), calling_pending_functors_(false), threadId_(Current_thread::tid()), poller_(Poller::new_defaultPoller(this)), wakeup_fd(CreateEventfd()), wakeup_channel_(new Channel(this, wakeup_fd))
+    : looping_(false), quit_(false), calling_pending_functors_(false), threadId_(Current_thread::tid()), poller_(Poller::new_defaultPoller(this)),
+      wakeup_fd(CreateEventfd()), wakeup_channel_(new Channel(this, wakeup_fd))
 {
     LOG_DEBUG("EventLoop created %p in thread %d \n", this, threadId_);
-    if (t_loop_in_thisTherad)
-    {
+    if (t_loop_in_thisTherad) {
         LOG_FATAL("Another EventLoop %p exists in this thread %d \n", this, threadId_);
-    }
-    else
-    {
+    } else {
         t_loop_in_thisTherad = this;
     }
 
@@ -58,15 +57,13 @@ void EventLoop::loop()
 
     LOG_INFO("EventLoop %p start looping \n", this);
 
-    while (!quit_)
-    {
+    while (!quit_) {
         active_channels.clear();
         //监听两类fd 一种是client的fd，一种wakeup的fd
         poll_return_time_ = poller_->poll(k_poll_timeout, &active_channels);
 
-        for (Channel *channel : active_channels)
-        {
-            //Poller监听哪些channel发生事件了，然后上报给eventloop，通知channel处理事件
+        for (Channel *channel : active_channels) {
+            // Poller监听哪些channel发生事件了，然后上报给eventloop，通知channel处理事件
             channel->handle_event(poll_return_time_);
         }
 
@@ -84,8 +81,7 @@ void EventLoop::quit()
     quit_ = true;
 
     //在其他线程中，调用的quit（在sub中调用main的loop）
-    if (!is_in_loopThread() || calling_pending_functors_)
-    {
+    if (!is_in_loopThread() || calling_pending_functors_) {
         wakeup();
     }
 }
@@ -94,11 +90,9 @@ void EventLoop::quit()
 void EventLoop::run_in_loop(Functor cb)
 {
     //在当前的loop线程中执行回调
-    if (is_in_loopThread())
-    {
+    if (is_in_loopThread()) {
         cb();
-    }
-    else //在其他线程执行cb，唤醒loop所在线程执行cb
+    } else //在其他线程执行cb，唤醒loop所在线程执行cb
     {
         queue_in_loop(cb);
     }
@@ -113,9 +107,8 @@ void EventLoop::queue_in_loop(Functor cb)
     }
 
     //唤醒相应的，需要执行上面回调操作的loop线程
-    //calling_pending_functors是指 当前loop正在执行回调，但是loop又有了新的回调
-    if (!is_in_loopThread() || calling_pending_functors_)
-    {
+    // calling_pending_functors是指 当前loop正在执行回调，但是loop又有了新的回调
+    if (!is_in_loopThread() || calling_pending_functors_) {
         wakeup(); //唤醒loop所在线程
     }
 }
@@ -126,13 +119,12 @@ void EventLoop::wakeup()
 {
     uint64_t one = 1;
     ssize_t n = write(wakeup_fd, &one, sizeof(one));
-    if (n != sizeof(one))
-    {
+    if (n != sizeof(one)) {
         LOG_ERROR("EventLoop::wakeup() writes %lu bytes instead of 8 \n", n);
     }
 }
 
-//poller的方法
+// poller的方法
 void EventLoop::update_channel(Channel *channel)
 {
     poller_->update_channel(channel);
@@ -146,13 +138,12 @@ bool EventLoop::has_channel(Channel *channel)
     return poller_->has_channel(channel);
 }
 
-void EventLoop::handle_read() //wake up
+void EventLoop::handle_read() // wake up
 {
     uint64_t one = 1;
     ssize_t n = read(wakeup_fd, &one, sizeof(int));
 
-    if (n != sizeof(one))
-    {
+    if (n != sizeof(one)) {
         LOG_ERROR("EventLoop: handleRead() reads %lu bytes instead of 8", n);
     }
 }
@@ -169,8 +160,7 @@ void EventLoop::do_pending_functors()
         functors.swap(pending_Functors_);
     }
 
-    for (const Functor &functor : functors)
-    {
+    for (const Functor &functor : functors) {
         functor();
     }
     calling_pending_functors_ = false;

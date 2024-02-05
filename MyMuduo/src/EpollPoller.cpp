@@ -95,7 +95,7 @@ TimeStamp EpollPoller::poll(int timeout, ChannelList *active_channels)
         fill_active_channels(events_num, active_channels);
 
         //需要扩容
-        if (events_num == events_.size())
+        if (events_num == events_.size()) // 如果发生的事件数等于epoll_wait返回的事件数，说明内核事件表已满，需要扩容
         {
             events_.resize(events_.size() * 2);
         }
@@ -137,7 +137,7 @@ void EpollPoller::update(int operation, Channel *channel)
     epoll_event event;
     memset(&event, 0, sizeof(event));
     event.events = channel->get_events();
-    event.data.fd = sockfd;
+    event.data.fd = sockfd; // unused
     event.data.ptr = channel;
 
     if (epoll_ctl(epollfd_, operation, sockfd, &event) < 0)

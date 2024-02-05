@@ -34,7 +34,6 @@ EventLoop *EventLoopThread::start_loop()
     return loop;
 }
 
-//启动的线程中执行以下方法
 void EventLoopThread::thread_function()
 {
     EventLoop loop; //创建一个独立的EventLoop，和上面的线程是一一对应 one loop per thread
@@ -47,10 +46,10 @@ void EventLoopThread::thread_function()
     {
         unique_lock<mutex> lock(thread_mutex_);
         loop_ = &loop;
-        condition_.notify_one();
+        condition_.notify_one(); 
     }
 
-    loop.loop(); //开启事件循环
+    loop.loop(); //开启事件循环  有效操作
 
     //结束事件循环
     unique_lock<mutex> lock(thread_mutex_);
